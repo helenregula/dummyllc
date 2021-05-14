@@ -1,4 +1,3 @@
-# Types
 type Book implements Timestamps { 
   id: ID!
   name: String!
@@ -7,6 +6,11 @@ type Book implements Timestamps {
   # Interface required
   createdAt: Date!
   updatedAt: Date!
+}
+
+type Books {
+  info: Info!
+  results: [Book]!
 }
 
 # Inputs
