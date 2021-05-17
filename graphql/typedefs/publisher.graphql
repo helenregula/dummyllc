@@ -1,7 +1,7 @@
 type Publisher implements Timestamps {
   id: ID!
   name: String!
-
+  authors: [Author]
   # Interface required
   createdAt: Date!
   updatedAt: Date!

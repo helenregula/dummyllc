@@ -18,12 +18,23 @@ export const manifest = {
         get:{
           operation: 'book'
         }
+      },
+      '/author': {
+        get: {
+          operation: 'author'
+        }
       }
     }
   }
 
-  /*
-  ,
+
+  /* test endpoints - currently not using all of them, while AC fixes nested arguments functionality
+      '/book/:id':{
+            //METHOD:
+            get:{
+              operation: 'book'
+            }
+          },
         post: {
           operation: 'updateBook'
         }

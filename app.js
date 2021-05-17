@@ -11,10 +11,10 @@ app.use(express.json())
 const createdQuery = queryObject(manifest)
 console.log(createdQuery)
 //STEP 5
-//const apiRouter = routerCreation(manifest, createdQuery);
+const apiRouter = routerCreation(manifest, createdQuery);
 
 //STEP 6
-//app.use('/api', apiRouter)
+app.use('/api', apiRouter)
 
 
 graphqlServer.applyMiddleware({

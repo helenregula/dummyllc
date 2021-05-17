@@ -3,113 +3,31 @@
 const graphql = require('graphql');
 const path = require('path');
 const fs = require('fs');
-import schema from './graphql/schema'
+import schema from './graphql/schema';
+import { manifest } from './dummyManifestAndQueryObj.js';
 
 // user will designate REST endpoints, but assumption is that a GQL operation already exists for each one
-  // error handling - if an invalid/non-existent operation is specified
+// error handling - if an invalid/non-existent operation is specified
 // we need to create a list of all the queries that match up with a specific endpoint
-  // look up the operation value within the schema file and compose the GQL query
-  // assumption: any operation being used for a REST endpoint will have its "fully expanded" query returned (e.g., every scalar field) and it cannot contain nested references (? - TBD) 
-  // need to handle and have placeholders for parameter fields when necessary
-  // whether these are stored in multiple files or one file can be determined later
+// look up the operation value within the schema file and compose the GQL query
+// assumption: any operation being used for a REST endpoint will have its "fully expanded" query returned (e.g., every scalar field) and it cannot contain nested references (? - TBD) 
+// need to handle and have placeholders for parameter fields when necessary
+// whether these are stored in multiple files or one file can be determined later
 // this list of queries will then be referenced by the middleware based on the REST request received
-  // look up the path of the request (either within the manifest file or directly on the file that has the query operations) to find the corresponding query
-  // pass the query into the execution function
-
-/************************** 
-***** TEST INPUTS *********
-***************************/
-
-const manifest = {
-  "endpoints": {
-    "/users": {
-      "get": {
-        "operation": "users"
-      }
-    },
-    "/users/me": {
-      "get": {
-        "operation": "me"
-      },
-      "post": {
-        "operation": "deleteUser"
-      }
-    },
-    "/users/:id": {
-      "get": {
-        "operation": "createUser"
-      }
-    }
-  }
-};
+// look up the path of the request (either within the manifest file or directly on the file that has the query operations) to find the corresponding query
+// pass the query into the execution function
 
 
 
-const schemaStr = `
-  type Query {
-    users(query: String): [User!]!
-    posts(query: String): [Post!]!
-    me: User!
-    post: Post!
-  }
 
-  type Mutation {
-    createUser(data: CreateUserInput): User!
-    deleteUser(id: ID!): User!
-    createPost(
-      title: String!
-      body: String!
-      published: Boolean!
-      author: ID!): Post!
-    deletePost(id: ID!): Post!
-  }
+// *** NEED TO HAVE USER UPDATE THIS LIST IF THEY HAVE ANY CUSTOM SCALARS
+// this customScalars array will be exposed to users
+const customScalars = ['Date'];
 
-  type User {
-    id: ID!
-    name: String!
-    email: String!
-    age: Int
-    posts: [Post!]!
-  }
+// this scalarTypes array will be hidden from users
+const scalarTypes = ['String', 'Int', 'ID', 'Boolean', 'Float', ...customScalars]
 
-  type Post {
-    id: ID!
-    title: String!
-    body: String!
-    published: Boolean!
-  
-  }
 
-  input CreateUserInput {
-    name: String!
-    email: String!
-    age: Int
-  }
-`
-
-//const schema = graphql.buildSchema(schemaStr);
-// console.log(schema.getType('CreateUserInput').getFields());
-
-// console.log('schema query type: ', schema.getQueryType()) // this is not helpful, just returns 'Query'
-// console.log('schema query fields: ', schema.getQueryType().getFields())
-// console.log('users fields: ', schema.getQueryType().getFields().users)
-// console.log('users fields type: ', schema.getQueryType().getFields().users.type)
-// console.log('inspect on users fields type: ', schema.getQueryType().getFields().users.type.inspect())
-// const currType = schema.getQueryType().getFields().users.type.inspect();
-// console.log('get fields for a custom type', schema.getType('User').getFields())
-// console.log('get type of operation by name: ', schema.getType('users').getFields()) // this does not work for Query/Mutation/Subscription types
-// const schema2 = graphql.buildSchema(path.resolve(__dirname, './src/schema.graphql'))
-
-const scalarTypes = ['String', 'Int', 'ID', 'Boolean', 'Float']
-// in order to look up each operation, need to check the keys within the schema.getQueryType() and schema.getMutationType() objects
-// if type is not scalar, then need to:
-  // insert a new object   
-  // look up the fields of the custom type by name
-    // iterate through the keys of the custom type object
-      // if key.type is scalar, then add key to the query
-      // if key.type is not scalar, then need to:
-        // repeat the process of opening new object and looking up the fields (maybe recursive call?)
-        
 
 /************************** 
 ***** HELPER FUNCTIONS ****
@@ -119,8 +37,8 @@ const scalarTypes = ['String', 'Int', 'ID', 'Boolean', 'Float']
 function typeTrim(type) {
   const typeArr = type.split('');
   const trimArr = [];
-  for(let i = 0; i < typeArr.length; i++) {
-    if(typeArr[i] !== '[' && typeArr[i] !== ']' && typeArr[i] !== '!') {
+  for (let i = 0; i < typeArr.length; i++) {
+    if (typeArr[i] !== '[' && typeArr[i] !== ']' && typeArr[i] !== '!') {
       trimArr.push(typeArr[i])
     }
   }
@@ -130,41 +48,37 @@ function typeTrim(type) {
 /* recursive function which collects all of the fields associated with a type; if the field is scalar type, it adds to the return object;
 if the field is a custom type, the function is invoked again on that field's schema fields continues recursively until only scalar types are found;
 this function ignores situations where a custom type has itself as a field, as this provides duplicative information & causes endless loops */
-function grabFields(customSchema, obj) {
+
+// this is a helper function that will track the number of times a customType has had grabFields invoked on it
+// used to ensure that we run 1 layer of circular calls to get all fields, while avoiding a max callstack error
+function countOccurrences(array, val) {
+  return array.reduce((a, v) => (v === val ? a + 1 : a), 0);
+}
+
+function grabFields(customSchema, obj, recursiveBreakArr) {
   let returnObj = {};
-  for(const key in obj) {
+  for (const key in obj) {
     let typeString = typeTrim(obj[key].type.toString());
-    if(scalarTypes.includes(typeString)) returnObj[key] = '';
+    if (scalarTypes.includes(typeString)) returnObj[key] = '';
     else {
-      if(typeString !== customSchema.toString()) {
-      returnObj[key] = grabFields(typeString, schema.getType(typeString).getFields());
+      if (typeString !== customSchema.toString()) {
+        recursiveBreakArr.push(typeString);
+        if (countOccurrences(recursiveBreakArr, typeString) < 2) {
+          returnObj[key] = grabFields(typeString, schema.getType(typeString).getFields(), recursiveBreakArr);
+        }
       }
     }
   }
   return returnObj;
 }
 
-// testing the recursive function
-// let meSchema = schema.getQueryType().getFields();
-// let mutationSchema = schema.getMutationType().getFields();
-// let userSchema = schema.getType('User').getFields();
-// let postSchema = schema.getType('Post').getFields();
-
-
-// console.log('overall query schema', meSchema);
-// console.log('overall mutation schema', mutationSchema.createPost.args);
-// console.log('createUser args', mutationSchema.createUser.args);
-// console.log('users args', meSchema.users.args);
-// console.log('User schema', userSchema);
-// console.log('Post schema', postSchema);
-// console.log('recursive check', grabFields('User', userSchema));
 
 /* convert the query/args object to string version; called recursively if there are nested type objs */
 function buildString(fieldsObj) {
   const queryArr = [];
-  for(const key in fieldsObj) {
+  for (const key in fieldsObj) {
     queryArr.push(key);
-    if(fieldsObj[key] !== '') {
+    if (fieldsObj[key] !== '') {
       queryArr.push('{');
       queryArr.push(buildString(fieldsObj[key]));
       queryArr.push('}');
@@ -180,73 +94,56 @@ function buildString(fieldsObj) {
   2) multiple scalar args
   3) custom input types as args */
 
-  // declaring varObj as a global variable which will be populated by grabArgs and then accessed by varStrBuild()
-  // let varObj = {};
 
-  function grabArgs(argsArr) {
+function grabArgs(argsArr) {
   const returnArgsObj = {};
   const returnVarsObj = {};
-  for(let i = 0; i < argsArr.length; i++) {
+  for (let i = 0; i < argsArr.length; i++) {
     let typeString = typeTrim(argsArr[i].type.toString());
-    if(scalarTypes.includes(typeString)) {
+    if (scalarTypes.includes(typeString)) {
       returnArgsObj[argsArr[i].name] = '';
       returnVarsObj[`$${argsArr[i].name}`] = argsArr[i].type.toString();
     } else {
       const nestedFields = grabFields(typeString, schema.getType(typeString).getFields());
       returnArgsObj[argsArr[i].name] = nestedFields;
-      };
     };
-  
+  };
+
   return [returnArgsObj, returnVarsObj];
 };
-
-// console.log('createPost args (multi): ', grabArgs(mutationSchema.createPost.args));
-// console.log('deleteUser args (single): ', grabArgs(mutationSchema.deleteUser.args));
-// console.log('createUser args (nested): ', grabArgs(mutationSchema.createUser.args));
-
-// console.log('createPost args string: ', buildString(grabArgs(mutationSchema.createPost.args)[0]));
-// console.log('varObj1: ', grabArgs(mutationSchema.createPost.args)[1]);
-// console.log('deleteUser args string: ', buildString(grabArgs(mutationSchema.deleteUser.args)[0]));
-// console.log('varObj2: ', grabArgs(mutationSchema.deleteUser.args)[1]);
-// console.log('createUser args string: ', buildString(grabArgs(mutationSchema.createUser.args)[0]));
-// console.log('varObj3: ', grabArgs(mutationSchema.createUser.args)[1]);
 // *****^^NEED TO TROUBLESHOOT GETTING THE NESTED ARGS VAR OBJECT TO BE CREATED)*****
 
 
 /* formats the args string into the arg:$arg format */
 function argsStrFormatter(str) {
-let strArray = str.split(' ');
-const insIndex = strArray.indexOf('{');
-if(insIndex > 0) {
-  for(let i = insIndex + 1; i < strArray.length - 1; i++) {
-    strArray[i] = `${strArray[i]}:$${strArray[i]},`
-  };
-  strArray.splice(insIndex, 0, ':');
-}
-else {
-  for(let i = 0; i < strArray.length; i++) {
-    strArray[i] = `${strArray[i]}:$${strArray[i]},`
+  let strArray = str.split(' ');
+  const insIndex = strArray.indexOf('{');
+  if (insIndex > 0) {
+    for (let i = insIndex + 1; i < strArray.length - 1; i++) {
+      strArray[i] = `${strArray[i]}:$${strArray[i]},`
+    };
+    strArray.splice(insIndex, 0, ':');
   }
-}
-return strArray.join(' ');
+  else {
+    for (let i = 0; i < strArray.length; i++) {
+      strArray[i] = `${strArray[i]}:$${strArray[i]},`
+    }
+  }
+  return strArray.join(' ');
 };
 
-// console.log(argsStrFormatter(buildString(grabArgs(mutationSchema.deleteUser.args))));
-// console.log(argsStrFormatter(buildString(grabArgs(mutationSchema.createPost.args))));
-// console.log(argsStrFormatter(buildString(grabArgs(mutationSchema.createUser.args))));
 
 
 /* formats the args string into the $var: type format for variables */
 function varStrBuild(varObj) {
   const varArr = [];
-    for(const key in varObj) {
-      varArr.push(`${key}:`);
-      varArr.push(`${varObj[key]},`);
-    };
-    return varArr.join(' ');
+  for (const key in varObj) {
+    varArr.push(`${key}:`);
+    varArr.push(`${varObj[key]},`);
+  };
+  return varArr.join(' ');
 }
 
-// console.log('var string', varStrBuild(varObj));
 
 
 
@@ -260,11 +157,11 @@ function generateQuery(operation) {
   let typeSchema;
   const querySchema = schema.getQueryType().getFields();
   const mutationSchema = schema.getMutationType().getFields();
-  if(Object.keys(querySchema).includes(operation)) {
+  if (Object.keys(querySchema).includes(operation)) {
     operationType = 'Query';
     typeSchema = querySchema;
   };
-  if(Object.keys(mutationSchema).includes(operation)) {
+  if (Object.keys(mutationSchema).includes(operation)) {
     operationType = 'Mutation';
     typeSchema = mutationSchema;
   };
@@ -274,18 +171,18 @@ function generateQuery(operation) {
   let operationFields = typeSchema[operation];
   let customTypeFields;
   let customType;
-
+  let recursiveBreak = [];
 
   // check to see if the type is a scalar type -> if not, then need to look up the fields for each type
   // NOTE: operationFields.type (e.g., User!) is type Object, not String
   const operationFieldsTypeTrim = typeTrim(operationFields.type.toString());
 
-  if(scalarTypes.includes(operationFieldsTypeTrim)) returnFields[operationFieldsTypeTrim] = '';
+  if (scalarTypes.includes(operationFieldsTypeTrim)) returnFields[operationFieldsTypeTrim] = '';
   else {
     customType = operationFields.type;
     customTypeFields = schema.getType(typeTrim(operationFields.type.toString())).getFields()
     // use the grabFields helper function to recurse through each fields schema until we have all scalar fields for a type
-    returnFields = grabFields(customType, customTypeFields);
+    returnFields = grabFields(customType, customTypeFields, recursiveBreak);
   }
   // invoke buildString to create the string form of the query field
   const queryString = buildString(returnFields);
@@ -293,8 +190,8 @@ function generateQuery(operation) {
   // invoke grabArgs + buildString + argsStrFormatter if the type.args object is not empty
   let argsString;
   let varsString;
-  if(operationFields.args.length) {
-    
+  if (operationFields.args.length) {
+
     const argsObj = grabArgs(operationFields.args)[0];
     const argsVal = argsStrFormatter(buildString(argsObj));
     argsString = `( ${argsVal} )`;
@@ -314,10 +211,10 @@ function generateQuery(operation) {
 
 }
 
-// console.log('me: ', generateQuery('me'));
-// console.log('createPost: ', generateQuery('createPost'));
-// console.log('createUser: ', generateQuery('createUser'));
-// console.log('deleteUser: ', generateQuery('deleteUser'));
+// console.log('book: ', generateQuery('book'));
+// console.log('updateBook: ', generateQuery('updateBook'));
+// console.log('books: ', generateQuery('books'));
+// console.log('author: ', generateQuery('author'));
 
 
 
@@ -328,8 +225,8 @@ function generateQuery(operation) {
 function queryObject(manifest) {
   const endPoints = manifest.endpoints;
   let returnObj = {};
-  for(const path in endPoints) {
-    for(const action in endPoints[path]) {
+  for (const path in endPoints) {
+    for (const action in endPoints[path]) {
       const operationName = endPoints[path][action].operation
       returnObj[operationName] = generateQuery(operationName);
     };
@@ -340,18 +237,10 @@ function queryObject(manifest) {
 
 // console.log('final queryObject', queryObject(manifest));
 
+
+
 export default queryObject;
 
-/********************************** 
-***** ARGS DICTIONARY FUNCTION ****
-***********************************/
-
-function argsObjGen(manifest) {
-  queryObject(manifest);
-  return argsObj;
-}
-
-// console.log(argsObjGen(manifest));
 
 
 
