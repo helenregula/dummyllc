@@ -19,7 +19,7 @@ const resolvers = {
   },
   ...authorFields,
   ...bookFields,
-  ...publisherFields,
+  //...publisherFields,
 };
 
 export default resolvers;
