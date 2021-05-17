@@ -1,88 +1,20 @@
 import express from 'express';
 import graphqlServer from './graphql';
-import { routerCreation } from './workInProgress';
-import { execute } from 'graphql';
-import schema from './graphql/schema';
-import resolvers from './graphql/resolvers'
+import { routerCreation } from './mvpRouteCreation.js';
+import { manifest } from './dummyManifestAndQueryObj.js';
+import queryObject from './wip.js';
+import schema from './graphql/schema'
 
 const app = express();
 app.use(express.json())
 
-//FIRST FUNCTION WOULD BE INVOKED!
+const createdQuery = queryObject(manifest)
+console.log(createdQuery)
+//STEP 5
+//const apiRouter = routerCreation(manifest, createdQuery);
 
-//NOTE USER OF NPM PACKAGE WILL NEED TO DO THIS WRAPPER FUNCTION
-const executeFn = ({ query, variables, context }) => {
-  return execute({
-      schema,
-      document: query,
-      variableValues: variables,
-      contextValue: context,
-      rootValue: resolvers
-  });
-}
-
-const manifest = {
-  endpoints: {
-    //INSERT API PATH HERE 
-    '/book/:id':{
-      //METHOD:
-      get:{
-        operation: 'book'
-      },
-      post: {
-        operation: 'updateBook'
-      }
-    },
-    '/author': {
-      get: {
-        operation: 'author'
-      }
-    }
-  }
-}
-
-//RETURNED OBJECT FROM HER FUNCTION
-const createdQuery = {
-  query: {
-    book: `query ($id: ID!)  {
-      book(id: $id){
-        id
-        name
-        author{
-          id
-          name
-        }
-      }
-    }`,
-    
-    author: `query ($id: ID!) {
-      author(id: $id){
-        id
-        name
-      }
-    }`
-  },
-  mutation: {
-    updateBook: `mutation($id: ID!, $book: BookUpdateInput!) {
-      updateBook (id: $id, book: $book) {
-        id
-        name
-        author {
-          id
-          name
-        }
-      }
-    }`
-
-  }
-}
-
-const apiRouter = routerCreation(schema, executeFn, manifest, createdQuery);
-
-app.use('/api', apiRouter)
-
-//METHOD: 'GET', ENDPOINT: '/api/user/:id'
-
+//STEP 6
+//app.use('/api', apiRouter)
 
 
 graphqlServer.applyMiddleware({
@@ -93,13 +25,15 @@ export default app;
 
 
 
-/* TODO
+/* USER OF NPM PACKAGE TODOs
 
-  1. import schema-DONE
-  2. import execute function from graphql-DONE
-  3. create dummy manifest based on schema inputs
-  4. create dummy createdQuery object (Which in reality would be returned from the frist function)
-
-
-
+  1. Download NPM Package which will add file into your root directory of project
+  2. Define the manifest object in the file
+  3. Import Manifest Object into you express server (where you invoked express)
+  4. invoked createQuery function and save into a variable
+      -ex: const queryObject = createQuery(schema, manifest);
+  5. invoked routeCreation function and save as a variable
+      -ex: const restRouter = routeCreation(manifest, queryObject)
+  6. App.Use to an endpoint you designate with the restRouter as the middleware that will take care of it
+      -ex: app.use('<DESIGNATE ENDPOINT FOR ALL REST REQUEST TO GO TO>', restRouter)
 */
