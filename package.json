@@ -32,6 +32,8 @@
     "dotenv": "^9.0.2",
     "express": "^4.17.1",
     "graphql": "^15.5.0",
-    "mongoose": "^5.12.9"
+    "graphql-tag": "^2.12.4",
+    "mongoose": "^5.12.9",
+    "node-fetch": "^2.6.1"
   }
 }

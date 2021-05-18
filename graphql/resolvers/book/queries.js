@@ -28,7 +28,12 @@ const bookQueries = {
       },
     };
   },
-  book: async (_, { id }, { loaders }) => loaders.book.one(id),
+  book: async (_, { id }, { loaders }) => {
+    //console.log('IN RESOLVER BOOK ID: ', id),
+    //console.log('IN BOOK RESOLVER LOADER: ', loaders)
+    return loaders.book.one(id)
+  
+  },
 };
 
 export default bookQueries;

@@ -10,6 +10,11 @@ app.get('/',(req, res) => {
 })
 app.use(express.static(path.join(__dirname, 'client/public')));
 
+
+
+
+
+
 const start = async () => {
   try {
     console.log('Connecting to database');
