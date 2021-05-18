@@ -35,9 +35,7 @@
 // fetch('http://localhost:3000/api/book/60a1a34ca2a2b037f6405886', {
 //   method: 'post',
 //   headers: { 'Content-Type': 'application/json' },
-//   body:JSON.stringify({book:{
-//     name: "The Trials and Tribulations of Ms. Cookie Parser"
-//   }}),
+//   body:JSON.stringify({name: "The Trials and Tribulations of Ms. Cookie Parser"}),
 //  }
 // ).then(res => res.json()).then(data=>{console.log(data)}).catch(err => console.log(err))
 

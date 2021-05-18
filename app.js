@@ -8,7 +8,7 @@ import schema from './graphql/schema'
 const app = express();
 app.use(express.json())
 
-const createdQuery = queryObject(manifest)
+const createdQuery = queryObject(manifest, schema);
 console.log(createdQuery)
 //STEP 5
 const apiRouter = routerCreation(manifest, createdQuery);

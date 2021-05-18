@@ -35,71 +35,47 @@ export const manifest = {
     }
   }
 
-
-  /* test endpoints - currently not using all of them, while AC fixes nested arguments functionality
-      '/book/:id':{
-            //METHOD:
-            get:{
-              operation: 'book'
-            }
-          },
-        post: {
-          operation: 'updateBook'
-        }
-      },
-  
-      '/books': {
-        get: {
-          operation: 'books'
-        }
-      },
-  
-      '/author': {
-        get: {
-          operation: 'author'
-        }
-  */
-  
+  // FOR REFERENCE / TESTING ONLY
   //RETURNED OBJECT FROM CREATE QUERY FUNCTION
-  export const createdQuery = {
-    query: {
-      book: `query ($id: ID!)  {
-        book(id: $id){
-          id
-          name
-          author{
-            id
-            name
-          }
-        }
-      }`,
+  // export const createdQuery = {
+  //   query: {
+  //     book: `query ($id: ID!)  {
+  //       book(id: $id){
+  //         id
+  //         name
+  //         author{
+  //           id
+  //           name
+  //         }
+  //       }
+  //     }`,
       
-      books: `query {
-        books{
-          results{
-            id
-            name
-          }
-        }
-      }`,
-      author: `query ($id: ID!) {
-        author(id: $id){
-          id
-          name
-        }
-      }`
-    },
-    mutation: {
-      updateBook: `mutation($id: ID!, $book: BookUpdateInput!) {
-        updateBook (id: $id, book: $book) {
-          id
-          name
-          author {
-            id
-            name
-          }
-        }
-      }`
+  //     books: `query {
+  //       books{
+  //         results{
+  //           id
+  //           name
+  //         }
+  //       }
+  //     }`,
+  //     author: `query ($id: ID!) {
+  //       author(id: $id){
+  //         id
+  //         name
+  //       }
+  //     }`
+  //   },
+  //   mutation: {
+  //     updateBook: `mutation($id: ID!, $book: BookUpdateInput!) {
+  //       updateBook (id: $id, book: $book) {
+  //         id
+  //         name
+  //         author {
+  //           id
+  //           name
+  //         }
+  //       }
+  //     }`
   
-    }
-  }
+  //   }
+  // }

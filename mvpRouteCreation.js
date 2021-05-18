@@ -25,7 +25,7 @@ export const routerCreation = (
                     currentQuery = createdGQL[query]
                 }
             }
-            console.log("CURRENT QUERY: ", currentQuery);
+            // console.log("CURRENT QUERY: ", currentQuery);
             // for (let query in queryObj) {
 
             //     if (query === endpoints[apiPath][method].operation) {
