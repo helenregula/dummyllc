@@ -9,7 +9,7 @@ const app = express();
 app.use(express.json())
 
 const createdQuery = queryObject(manifest)
-console.log(createdQuery)
+//console.log(createdQuery)
 //STEP 5
 const apiRouter = routerCreation(manifest, createdQuery);
 

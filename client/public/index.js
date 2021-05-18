@@ -16,11 +16,11 @@
 
 
 /* REST API REQUEST TO GET SINGULAR BOOK FROM DB */
-// fetch('http://localhost:3000/api/book/60a1a38fa2a2b037f6405887', {
-//   method: 'get',
-//   headers: { 'Content-Type': 'application/json' },
-// }
-// ).then(res => res.json()).then(data => { console.log(data) }).catch(err => console.log(err))
+fetch('http://localhost:3000/api/book/60a1a38fa2a2b037f6405887', {
+  method: 'get',
+  headers: { 'Content-Type': 'application/json' },
+}
+).then(res => res.json()).then(data => { console.log(data) }).catch(err => console.log(err))
 
 
 /* REST API GET REQUEST TO GET SINGULAR AUTHOR */
