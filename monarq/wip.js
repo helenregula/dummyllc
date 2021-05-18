@@ -3,7 +3,7 @@
 const graphql = require('graphql');
 const path = require('path');
 const fs = require('fs');
-import schema from './graphql/schema';
+import schema from '../graphql/schema';
 import { manifest } from './dummyManifestAndQueryObj.js';
 
 // user will designate REST endpoints, but assumption is that a GQL operation already exists for each one

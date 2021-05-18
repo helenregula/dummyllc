@@ -1,8 +1,8 @@
 import express from 'express';
 import graphqlServer from './graphql';
-import { routerCreation } from './mvpRouteCreation.js';
-import { manifest } from './dummyManifestAndQueryObj.js';
-import queryObject from './wip.js';
+import { routerCreation } from './monarq/mvpRouteCreation.js';
+import { manifest } from './monarq/dummyManifestAndQueryObj.js';
+import queryObject from './monarq/wip.js';
 import schema from './graphql/schema'
 
 const app = express();
