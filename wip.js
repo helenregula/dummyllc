@@ -106,6 +106,9 @@ function grabArgs(argsArr) {
     } else {
       const nestedFields = grabFields(typeString, schema.getType(typeString).getFields());
       returnArgsObj[argsArr[i].name] = nestedFields;
+      for(const field in nestedFields) {
+        returnVarsObj[`$${field}`] = schema.getType(typeString).getFields()[field].type;
+      };
     };
   };
 

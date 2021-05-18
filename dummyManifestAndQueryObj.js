@@ -17,6 +17,14 @@ export const manifest = {
         //METHOD:
         get:{
           operation: 'book'
+        },
+        post: {
+          operation: 'updateBook'
+        }
+      },
+      '/books': {
+        get: {
+          operation: 'books'
         }
       },
       '/author': {
