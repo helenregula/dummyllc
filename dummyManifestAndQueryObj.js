@@ -23,7 +23,7 @@ export const manifest = {
         }
       },
       '/books': {
-        get: {
+        post: {
           operation: 'books'
         }
       },
