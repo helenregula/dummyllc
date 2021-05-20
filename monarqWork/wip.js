@@ -202,7 +202,7 @@ function grabArgs(schema, argsArr) {
 /* formats the args string into the arg:$arg format */
 function argsStrFormatter(str) {
   let strArray = str.split(' ');
-  console.log('strArray', strArray)
+  //console.log('strArray', strArray)
   const insIndex = strArray.indexOf('{');
   if (insIndex > 0) {
     for (let i = insIndex + 1; i < strArray.length - 1; i++) {

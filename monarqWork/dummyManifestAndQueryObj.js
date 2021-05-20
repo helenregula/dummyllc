@@ -10,30 +10,50 @@
 // }
 
 //USER OF NPM PACKAGE WOULD DEFINE THIS MANIFEST OBJECT
+//STEP 2
 export const manifest = {
     endpoints: {
       //INSERT API PATH HERE 
       '/book/:id':{
         //METHOD:
         get:{
-          operation: 'book'
+          operation: 'book',
         },
         post: {
-          operation: 'updateBook'
+          operation: 'updateBook',
         }
       },
       '/books': {
-        get: {
-          operation: 'books'
+        post: {
+          operation: 'books',
+          defaultParams: {
+            pageSize: 20,
+            page: 1
+          }
         }
       },
       '/author': {
         get: {
-          operation: 'author'
+          operation: 'author',
         }
       }
     }
   }
+
+//   {
+//     updateBook: {
+//       id: ID!,
+//       name: String
+//     },
+//     book: {
+//       id: ID!
+//     }
+//   }
+
+// {  
+//   updateBook: [id, name],
+//   author: ['id']
+// }
 
   // FOR REFERENCE / TESTING ONLY
   //RETURNED OBJECT FROM CREATE QUERY FUNCTION
