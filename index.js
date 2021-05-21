@@ -5,13 +5,18 @@ import path from 'path';
 import express from 'express';
 
 
+
 app.get('/',(req, res) => {
   res.sendFile(path.join(__dirname, '/client/public/index.html'))
 })
 app.use(express.static(path.join(__dirname, 'client/public')));
 
 
-
+app.get('/client/public/Enlight4.JPG', (req, res) => {
+  return res.status(200)
+    .set({'Content-Type': 'text/css', 'charset': 'utf-8'})
+    .sendFile(path.resolve(__dirname, './client/public/styles.css'));
+});
 
 
 

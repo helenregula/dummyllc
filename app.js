@@ -9,8 +9,9 @@ import { routerCreation, queryMap } from 'monarq';
 
 
 //STEP 3
-import { manifest } from './monarqWork/dummyManifestAndQueryObj.js';
+import { manifest } from './dummyManifestAndQueryObj.js';
 //const manifest = {}
+
 
 const app = express();
 app.use(express.json());
@@ -34,19 +35,17 @@ async function executeFn (str, variableObj, schema, context){
 }
 
 
-//STEP 5
+// STEP 1
 const createdQuery = queryMap(manifest, schema);
-//console.log(createdQuery)
 
-//STEP 6
+// STEP 2
 const apiRouter = routerCreation(manifest, createdQuery, {
-    schema,
-    context,
-    executeFn
+  schema, 
+  context,
+  executeFn
 });
 
-
-//STEP 7
+// STEP 3
 app.use('/api', apiRouter)
 
 
@@ -55,6 +54,17 @@ graphqlServer.applyMiddleware({
 });
 
 export default app;
+
+
+
+
+
+
+
+
+
+
+
 
 
 
