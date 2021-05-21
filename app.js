@@ -1,7 +1,7 @@
 import express from 'express';
 import graphqlServer from './graphql';
 import routerCreation from './monarq/routerCreation.js';
-import queryObject from './monarq/wip.js';
+import queryMap from './monarq/queryMap.js';
 import { manifest } from './dummyManifestAndQueryObj.js';
 
 import schema from './graphql/schema'
@@ -10,7 +10,7 @@ const app = express();
 app.use(express.json())
 
 // STEP 1
-const createdQuery = queryObject(manifest, schema);
+const createdQuery = queryMap(manifest, schema).queries;
 
 // STEP 2
 const apiRouter = routerCreation(manifest, createdQuery);

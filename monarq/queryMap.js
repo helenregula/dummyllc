@@ -1,21 +1,3 @@
-// note: was not able to use the import syntax, but the const + require language did work
-// import { graphql, buildSchema, makeExecutableSchema } from 'graphql'
-// const graphql = require('graphql');
-// const path = require('path');
-// const fs = require('fs');
-
-// user will designate REST endpoints, but assumption is that a GQL operation already exists for each one
-// error handling - if an invalid/non-existent operation is specified
-// we need to create a list of all the queries that match up with a specific endpoint
-// look up the operation value within the schema file and compose the GQL query
-// assumption: any operation being used for a REST endpoint will have its "fully expanded" query returned (e.g., every scalar field) and it cannot contain nested references (? - TBD) 
-// need to handle and have placeholders for parameter fields when necessary
-// whether these are stored in multiple files or one file can be determined later
-// this list of queries will then be referenced by the middleware based on the REST request received
-// look up the path of the request (either within the manifest file or directly on the file that has the query operations) to find the corresponding query
-// pass the query into the execution function
-
-
 // *** NEED TO HAVE USER UPDATE THIS LIST IF THEY HAVE ANY CUSTOM SCALARS
 // this customScalars array will be exposed to users
 const customScalars = ['Date'];
@@ -25,21 +7,33 @@ const scalarTypes = ['String', 'Int', 'ID', 'Boolean', 'Float', ...customScalars
 
 
 
-/************************************************* 
-***** FINAL QUERY OBJECT OUTPUT FUNCTION *********
-**************************************************/
+/******************************************************** 
+***** FINAL ARGS & QUERY OBJECT OUTPUT FUNCTION *********
+*********************************************************/
 
-function queryObject(manifest, schema) {
+function queryMap(manifest, schema) {
   const endPoints = manifest.endpoints;
-  let returnObj = {};
+  const argsObj = {};
+  const queryObj = {};
   for (const path in endPoints) {
     for (const action in endPoints[path]) {
       const operationName = endPoints[path][action].operation
-      returnObj[operationName] = generateQuery(schema, operationName);
+      
+      // generate the args object
+      const typeSchema = typeChecker(schema, operationName)[1]
+      const operationFields = typeSchema[operationName];
+      const varObj = grabArgs(schema, operationFields.args)[1];
+      argsObj[operationName] = varObj
+
+      // generate the query object
+      queryObj[operationName] = generateQuery(schema, operationName);
     };
   };
-  return returnObj;
-}
+  return {
+    args: argsObj,
+    queries: queryObj
+  };
+};
 
 
 
@@ -48,19 +42,10 @@ function queryObject(manifest, schema) {
 ***********************************/
 
 function generateQuery(schema, operation) {
-  // first figure out whether it is a query or mutation
-  let operationType;
-  let typeSchema;
-  const querySchema = schema.getQueryType().getFields();
-  const mutationSchema = schema.getMutationType().getFields();
-  if (Object.keys(querySchema).includes(operation)) {
-    operationType = 'Query';
-    typeSchema = querySchema;
-  };
-  if (Object.keys(mutationSchema).includes(operation)) {
-    operationType = 'Mutation';
-    typeSchema = mutationSchema;
-  };
+  // first determine whether it is a query or mutation
+  const typeInfo = typeChecker(schema, operation)
+  const operationType = typeInfo[0];
+  const typeSchema = typeInfo[1];
 
   // now look for all of the fields that need to be specified for the operation
   let returnFields = {};
@@ -70,7 +55,6 @@ function generateQuery(schema, operation) {
   let recursiveBreak = [];
 
   // check to see if the type is a scalar type -> if not, then need to look up the fields for each type
-  // NOTE: operationFields.type (e.g., User!) is type Object, not String
   const operationFieldsTypeTrim = typeTrim(operationFields.type.toString());
 
   if (scalarTypes.includes(operationFieldsTypeTrim)) returnFields[operationFieldsTypeTrim] = '';
@@ -105,7 +89,6 @@ function generateQuery(schema, operation) {
   const returnString = `${operationType.toLowerCase()} ${varsString} { ${operation} ${argsString} { ${queryString} } }`
   return returnString;
 }
-
 
 
 
@@ -253,10 +236,9 @@ function varStrBuild(varObj) {
 
 
 
+export default queryMap;
+// module.exports = queryMap;
 
-//export default queryObject;
-// module.exports = queryObject;
-export default queryObject;
 
 
 
