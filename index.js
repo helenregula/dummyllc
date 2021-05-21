@@ -12,7 +12,11 @@ app.get('/',(req, res) => {
 app.use(express.static(path.join(__dirname, 'client/public')));
 
 
-
+app.get('/client/public/Enlight4.JPG', (req, res) => {
+  return res.status(200)
+    .set({'Content-Type': 'text/css', 'charset': 'utf-8'})
+    .sendFile(path.resolve(__dirname, './client/public/styles.css'));
+});
 
 
 
