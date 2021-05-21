@@ -1,6 +1,6 @@
 import express from 'express';
 import graphqlServer from './graphql';
-import { routerCreation, queryObject } from 'monarq';
+import { queryMap, routerCreation } from 'monarq';
 import { manifest } from './dummyManifestAndQueryObj.js';
 
 import schema from './graphql/schema'
@@ -8,12 +8,13 @@ import schema from './graphql/schema'
 const app = express();
 app.use(express.json())
 
-const createdQuery = queryObject(manifest, schema);
-console.log(createdQuery)
-//STEP 5
+// STEP 1
+const createdQuery = queryMap(manifest, schema).queries;
+
+// STEP 2
 const apiRouter = routerCreation(manifest, createdQuery);
 
-//STEP 6
+// STEP 3
 app.use('/api', apiRouter)
 
 
@@ -22,6 +23,17 @@ graphqlServer.applyMiddleware({
 });
 
 export default app;
+
+
+
+
+
+
+
+
+
+
+
 
 
 

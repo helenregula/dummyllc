@@ -3,15 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PATH FTW</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand&display=swap" rel="stylesheet">
+  <title>Book Shelf</title>
 </head>
 <body>
-  
-  <button id="1">Ms.CookieParserPart3</button>
-  <button id="2">Get Button 2</button>
-  <button id="3">Post Request</button>
-  <button id="4">Another Get Request</button>
-  <p id="textbox"></p>
+  <div id="headerText">
+    <h1>My Library</h1>
+  </div>
+  <div id="findBookContainer">
+    <h2 id="findBookHeader">Find a book for me</h2>
+    <button id="1">Send GraphQL request</button>
+    <button id="2">Send REST request</button>
+  </div>
+  <div id="editBookContainer">
+    <h2 id="editBookHeader">Edit Book for me</h2>
+    <div id="inputContainer">
+      <form id="input-formGQL">
+        <input type="text" id="inputFieldGQL">
+      </form>
+      <button id="3">Send GraphQL request</button>
+      <form id="input-formREST">
+        <input type="text" id="inputFieldREST">
+      </form>
+      <button id="4">Send REST request</button>
+    </div>
+  </div>
+  <div id="outputBox">
+    <h2 id="outputHeader">Data Received: </h2>
+    <p id="textbox"></p>
+  </div>
   <script src="index.js"></script>
 </body>
 </html>
