@@ -1,7 +1,6 @@
 import express from 'express';
 import graphqlServer from './graphql';
-import routerCreation from './monarq/routerCreation.js';
-import queryMap from './monarq/queryMap.js';
+import { queryMap, routerCreation } from 'monarq';
 import { manifest } from './dummyManifestAndQueryObj.js';
 
 import schema from './graphql/schema'
