@@ -19,16 +19,14 @@ app.use(express.json());
 
 //STEP 4
 //will need to have user define this executeFunction cause the middleware will execute the graphql query with these 4 arguments passed in
-async function executeFn (str, variableObj, schema, context){
-  
-  const newContext = await context();
-  
+async function executeFn ({ query, variables, schema, context }){
+
   const data = await graphql(
     schema, 
-    str,
+    query,
     null,
-    newContext,
-    variableObj
+    context,
+    variables
   );
 
   return (data || errors);
@@ -40,9 +38,9 @@ const createdQuery = queryMap(manifest, schema);
 
 // STEP 2
 const apiRouter = routerCreation(manifest, createdQuery, {
-  schema, 
   context,
-  executeFn
+  schema, 
+  executeFn //takes an object with 4 keys: query, variables, schema, context
 });
 
 // STEP 3
