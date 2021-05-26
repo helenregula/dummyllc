@@ -11,12 +11,14 @@
 
 //USER OF NPM PACKAGE WOULD DEFINE THIS MANIFEST OBJECT
 //STEP 2
-export const manifest = {
+const manifest = {
     endpoints: {
       //INSERT API PATH HERE 
       '/book/:id':{
-        //METHOD:
+        //REST METHOD:
         get:{
+          //OPERATION COINCIDES WITH 
+          //YOUR METHOD IN THE QUERY/MUTATION OBJECT IN SCHEMA
           operation: 'book',
         },
         post: {
@@ -40,6 +42,7 @@ export const manifest = {
     }
   }
 
+  export default manifest;
 //   {
 //     updateBook: {
 //       id: ID!,

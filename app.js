@@ -9,7 +9,7 @@ import { routerCreation, queryMap } from 'monarq';
 
 
 //STEP 3
-import { manifest } from './dummyManifestAndQueryObj.js';
+import manifest from './dummyManifestAndQueryObj.js';
 //const manifest = {}
 
 
